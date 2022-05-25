@@ -23,10 +23,10 @@ docker run --name tplink-energy-monitor \
             --network host \
             --env TEM_PORT=${TEM_PORT:-3000} \
             --env TEM_LISTEN_ADDRESS="${TEM_LISTEN_ADDRESS:-::}" \
-            --env TEM_LOG_DIR_PATH="/var/lib/tplink-monitor" \
             --env TEM_LOG_INTERVAL_SECONDS="${TEM_LOG_INTERVAL_SECONDS:-60}" \
             --env TEM_MAX_LOG_ENTRIES="${TEM_MAX_LOG_ENTRIES:-1440}" \
-            -v "${TEM_LOG_DIR_PATH:-/var/lib/tplink-monitor}:/var/lib/tplink-monitor" \
+            --env TEM_LOG_DIR_PATH="/var/lib/tplink-monitor" \
+            --mount type=volume,source=tplink-energy-monitor-data,target=/var/lib/tplink-monitor \
 	    ${extra_run_args} \
             --init \
             tplink-energy-monitor

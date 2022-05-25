@@ -43,10 +43,7 @@ function loadLogConfig() {
     }
   }
   try {
-    if (!fs.accessSync(logDirPath,fs.constants.W_OK)) {
-      console.error("Data log directory " + logDirPath + " is not writeable by the current user");
-      process.exit(1)
-    }
+    fs.accessSync(logDirPath,fs.constants.W_OK);
   } catch (err) {
     console.error("Data log directory " + logDirPath + " or a parent directory is not writeable by the current user: ", err);
     throw(err);

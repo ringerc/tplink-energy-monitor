@@ -41,7 +41,9 @@ ARG BASE_IMAGE=node:8-alpine
 FROM $BASE_IMAGE as app
 ARG NODE_ENV=production
 ENV NODE_ENV=$NODE_ENV
+RUN mkdir -p /var/lib/tplink-monitor && chown node /var/lib/tplink-monitor
 USER node
+VOLUME /var/lib/tplink-monitor
 WORKDIR /opt/tplink-monitor
 COPY --from=builder /opt/tplink-monitor /opt/tplink-monitor
 ENTRYPOINT ["node","app.js"]

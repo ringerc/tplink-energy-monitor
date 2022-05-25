@@ -116,23 +116,29 @@ persistent data retention, automatic restart on reboot, and explicitly set
 listening port and address:
 
 ```
-$ sudo mkdir -p /var/lib/tplink-monitor
 $ docker run --name tplink-energy-monitor \
              --detach \
              --network host \
              --restart=unless-stopped \
              --env TEM_PORT=3000 \
              --env TEM_LISTEN_ADDRESS="::" \
-             --env TEM_LOG_DIR_PATH=/var/lib/tplink-monitor \
              --env TEM_LOG_INTERVAL_SECONDS=60 \
              --env TEM_MAX_LOG_ENTRIES=1440 \
-             -v /var/lib/tplink-monitor:/var/lib/tplink-monitor \
+             --env TEM_LOG_DIR_PATH="/var/lib/tplink-monitor" \
+             --mount type=volume,source=tplink-energy-monitor-data,target=/var/lib/tplink-monitor \
              --init \
              jbarnett/tplink-energy-monitor
 ```
 
-*The above assumes your normal user account can run `docker` without permissions errors. If not,
-on Linux you can run `sudo adduser docker $(id -un)`, then log out and back in again to enable it.*
+*The above assumes your normal user account can run `docker` without
+permissions errors. If not, on Linux you can run `sudo adduser docker $(id
+-un)`, then log out and back in again to enable it.*
+
+In this example the container data will be stored in a Docker Volume named
+`tplink-energy-monitor-data` to avoid the complexity of dealing with
+permissions, user-id mappings and Docker bind mounts. This cannot be mounted
+directly on the host. To extract data from the volume see [backup a
+volume](https://docs.docker.com/storage/volumes/#back-up-a-volume).
 
 ## Runtime control
 
@@ -180,6 +186,23 @@ and edit it there. Then add a `-v` bind-mount argument to the `docker run` comma
 `docker run` *...* `-v /etc/tplink-monitor/logger-config.json:/etc/tplink-monitor/logger-config.json:z` *...* `jbarnett/tplink-energy-monitor /etc/tplink-monitor/logger-config.json`
 
 (The local and container paths do not have to be the same, but it's usually less confusing if they are).
+
+## Bind-mount data store to the host
+
+The config file `logDirPath` or the env-var `TEM_LOG_DIR_PATH` may be set to
+point to a container path that is bind-mounted to the host using a docker `-v`
+or `--mount type=bind` option. This will expose the log files written by the
+app for direct access on the host.
+
+For this to work correctly, the host path must be writeable by the user-id
+inside the container.
+
+Doing this securely is not simple with Docker because it [does not offer clean,
+simple to use support for mapping uids between guest and
+host](https://docs.docker.com/engine/security/userns-remap/). You have to
+rebuild your container to run node as a the same numeric uid or gid as the host
+or make the directory world-writeable, so it's beyond the scope of this guide.
+See [Docker Volumes](https://docs.docker.com/storage/volumes/) for options.
 
 ## Building Docker images
 
