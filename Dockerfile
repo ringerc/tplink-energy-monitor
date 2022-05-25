@@ -11,9 +11,13 @@
 # For development builds, you can skip flattening the image with
 #   --target=builder --arg NODE_ENV=development
 #
+# To build for arm32v6 use --build-arg BASE_IMAGE=hypriot/rpi-node:8.1-slim
+# To build for arm32v7 use --build-arg BASE_IMAGE=arm32v7/node:8.11-slim
+#
 
 # Use a multi-stage build to keep npm droppings away from the final built image
-FROM node:8-alpine as builder
+ARG BASE_IMAGE=node:8-alpine
+FROM $BASE_IMAGE as builder
 USER node
 WORKDIR /opt/tplink-monitor
 # Install dependencies in a separate, cacheable layer
@@ -33,7 +37,8 @@ ENTRYPOINT ["npm","start"]
 
 # Flattened minimal production image with no excess layers and no npm launcher
 # wrapper.
-FROM node:8-alpine as app
+ARG BASE_IMAGE=node:8-alpine
+FROM $BASE_IMAGE as app
 ARG NODE_ENV=production
 ENV NODE_ENV=$NODE_ENV
 USER node
