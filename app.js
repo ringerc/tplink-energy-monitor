@@ -39,7 +39,18 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.listen(process.env.PORT || '3000');
+if (process.env.PORT && !process.env.TEM_PORT) {
+	console.log("WARNING: Setting env-var PORT is deprecated. Use TEM_PORT instead.")
+}
+const listenPort = process.env.TEM_PORT || process.env.PORT || '3000';
+var server = app.listen(listenPort, process.env.TEM_BIND_ADDRESS, function(err) {
+	if (err) {
+		console.log("Error starting server: " + err)
+	} else {
+		console.log("Server listening on ", server.address());
+		console.log("Change the listening port and/or bind address with the TEM_PORT and TEM_BIND_ADDRESS env-vars.");
+	}
+})
 
 module.exports.getWsClientCount = function() {
   return expressWs.getWss().clients.size;

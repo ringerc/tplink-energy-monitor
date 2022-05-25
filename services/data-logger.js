@@ -15,14 +15,14 @@ function loadLogConfig() {
     if (process.argv.length > 2) {
       loggerConfigPath = process.argv[2];
     } else {
-      loggerConfigPath = 'logger-config.json';
+      loggerConfigPath = process.env.TEM_CONFIG_FILE_PATH || 'logger-config.json';
     }
     console.log('Logger config file: "' + loggerConfigPath + '"')
 
     let config  = JSON.parse(fs.readFileSync(loggerConfigPath, 'utf8'));
-    logDirPath = config.logDirPath;
-    logIntervalMs = (config.logIntervalSeconds * 1000);
-    maxLogEntries = config.maxLogEntries;
+    logDirPath = process.env.TEM_LOG_DIR_PATH || config.logDirPath;
+    logIntervalMs = ((process.env.TEM_LOG_INTERVAL_SECONDS || config.logIntervalSeconds) * 1000);
+    maxLogEntries = process.env.TEM_MAX_LOG_ENTRIES || config.maxLogEntries;
 
   }
   catch (err) {

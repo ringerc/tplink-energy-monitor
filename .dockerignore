@@ -1,0 +1,7 @@
+/Dockerfile*
+/README.md
+/sonar-project.properties
+/.git
+/.travis.yml
+/.gitignore
+/.github
