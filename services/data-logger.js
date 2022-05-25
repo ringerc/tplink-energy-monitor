@@ -32,9 +32,25 @@ function loadLogConfig() {
     maxLogEntries = 1440  // 24 hrs at 1/min
   }
 
-  // Create log directory path if it doesn't already exist.
+  // Create log directory path if it doesn't already exist and check its access
   console.log('Log directory path: "' + logDirPath + '"')
-  shell.mkdir('-p', logDirPath);
+  try {
+    fs.mkdirSync(logDirPath, true);
+  } catch (err) {
+    if (!(err.code === 'EEXIST')) {
+      console.error("Failed to create data log directory at " + logDirPath + ": ", err);
+      throw(err);
+    }
+  }
+  try {
+    if (!fs.accessSync(logDirPath,fs.constants.W_OK)) {
+      console.error("Data log directory " + logDirPath + " is not writeable by the current user");
+      process.exit(1)
+    }
+  } catch (err) {
+    console.error("Data log directory " + logDirPath + " or a parent directory is not writeable by the current user: ", err);
+    throw(err);
+  }
 }
 
 function startLogging(device) {
@@ -48,7 +64,7 @@ function writeLog(filePath, log) {
     fs.writeFileSync(filePath, JSON.stringify(log), { flag: 'w' });
   }
   catch (err) {
-    console.warn('Error writing log for ' + device.alias + ' [' + device.deviceId + ']', err);
+    console.warn('Error writing log \"' + filePath + "\": ", err);
   }
 }
 

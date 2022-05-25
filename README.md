@@ -26,39 +26,20 @@ You can use any of the following methods to get the project running:
 The easiest way to run the project is to download one of the packaged executables from the [releases page](https://github.com/jamesbarnett91/tplink-monitor/releases). These are zip files containing a single executable file and some config. Just download the relevant file for your OS (Windows, Linux and MacOS available), extract the zip somewhere and double click executable. Then go to `localhost:3000` in your browser to access the dashboard.
 
 ### Docker
-Alternatively, you can pull the `jbarnett/tplink-energy-monitor` image and run that.
+
+Alternatively, you can pull the `jbarnett/tplink-energy-monitor` image and run that. You will need [Docker CE](https://docs.docker.com/engine/install) or a similar Docker-compatible container runtime.
 
 Note that because the server needs access to your local network to scan for TP-Link devices, you must run the image using [host networking](https://docs.docker.com/network/host/) e.g.:
 
 ```
-$ docker run -d --network host -n tplink-energy-monitor --init jbarnett/tplink-energy-monitor
+$ sudo docker run -d --network host -n tplink-energy-monitor --init jbarnett/tplink-energy-monitor
 ```
 
 Connect to it at `https://localhost:3000`.
 
-⚠️ The above command line will *not* preserve your log history if the container is re-deployed.
+⚠️  The above command line will *not* preserve your data log history long term, it's only suitable for trying the app out easily.
 
 See [Running with Docker](#running-with-docker) for details on how to customise the config file, make your data storage persistent, configure the listening port, build your own container images, etc.
-
-#### On ARM / Raspberry Pi
-
-Installation using Docker is ideal for running this app on the rPi. Pre-built ARM container images are not supplied so you will need to build your own, but it's simple, and it keeps all the nodejs droppings away from the rest of your system.
-
-[Install Docker CE](https://docs.docker.com/engine/install/debian/), `sudo adduser pi docker`, log in/out, then:
-
-```
-$ git clone https://github.com/jamesbarnett91/tplink-energy-monitor && cd tplink-energy-monitor
-$ docker buildx build -t tplink-energy-monitor .
-```
-
-... and follow the remaining instructions in the "Docker" section above to run the container.
-
-To free disk space used by docker caches on a system like an rPi where space may be at a premium, you can run:
-
-```
-$ docker buildx prune -f
-$ docker system prune -f
-```
 
 ### Node + NPM
 
@@ -130,7 +111,9 @@ jq -M '.|[.ts, .pw]|@csv' 8FCA808B79-log.json > 8FCA808B79-log.csv
 
 # Running with Docker
 
-To run the application persistently under Docker, with a custom config file, persistent data retention, automatic restart on reboot, and explicitly set listening port and address:
+To run the application persistently under Docker, with a custom config file,
+persistent data retention, automatic restart on reboot, and explicitly set
+listening port and address:
 
 ```
 $ sudo mkdir -p /var/lib/tplink-monitor
@@ -148,6 +131,8 @@ $ docker run --name tplink-energy-monitor \
              jbarnett/tplink-energy-monitor
 ```
 
+*The above assumes your normal user account can run `docker` without permissions errors. If not,
+on Linux you can run `sudo adduser docker $(id -un)`, then log out and back in again to enable it.*
 
 ## Runtime control
 
@@ -195,6 +180,31 @@ and edit it there. Then add a `-v` bind-mount argument to the `docker run` comma
 `docker run` *...* `-v /etc/tplink-monitor/logger-config.json:/etc/tplink-monitor/logger-config.json:z` *...* `jbarnett/tplink-energy-monitor /etc/tplink-monitor/logger-config.json`
 
 (The local and container paths do not have to be the same, but it's usually less confusing if they are).
+
+## Building Docker images
+
+Pre-built container images are supplied on Docker Hub for `x86_64` and popular
+ARM architectures, so you don't usually need to build your own. In particular,
+container images are supplied for most Raspberry Pi variants.
+
+[Install Docker CE](https://docs.docker.com/engine/install/debian/) then:
+
+```
+$ git clone https://github.com/jamesbarnett91/tplink-energy-monitor && cd tplink-energy-monitor
+$ docker buildx build -t tplink-energy-monitor .
+```
+
+Once built, follow the instructions in [Running with Docker](#running-with-docker),
+but use the image name `tplink-energy-monitor` instead of the upstream image
+name `jbarnett/tplink-energy-monitor`.
+
+To free disk space used by docker caches on a system like an rPi where space
+may be at a premium, you can run:
+
+```
+$ docker buildx prune -f
+$ docker system prune -f
+```
 
 # Notes
 
